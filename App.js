@@ -1,10 +1,39 @@
 import { Camera, CameraType } from 'expo-camera';
+import React, { useRef } from "react";
+// import logo from './logo.svg';
+import * as tf from "@tensorflow/tfjs";
+import * as bodyPix from "@tensorflow-models/body-pix";
 import { useState } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function App() {
   const [type, setType] = useState(CameraType.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
+  const canvasRef = useRef(null);
+
+  const runBodysegment = async () => {
+    const net = await bodyPix.load();
+    console.log("BodyPix model loaded.");
+    //  Loop and detect hands
+    setInterval(() => {
+      detect(net);
+    }, 100)
+  };
+
+  const detect = async (net) => {
+    const person = await net.segmentPersonParts(video);
+    console.log(person);
+
+    const coloredPartImage = bodyPix.toColoredPartMask(person);
+    bodyPix.drawMask(
+      canvasRef.current,
+      video,
+      coloredPartImage,
+      0.7,
+      0,
+      false
+    );
+    runBodysegment();
 
   if (!permission) {
     // Camera permissions are still loading
@@ -63,3 +92,4 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
+};
